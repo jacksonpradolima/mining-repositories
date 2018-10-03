@@ -13,7 +13,11 @@ repo = t.repo('DSpace/DSpace')
 # https://travispy.readthedocs.io/en/latest/entities/#travispy.entities.Repo
 print("Is it active?", repo.active)
 
-# How to find?
-build = t.build("DSpace/DSpace")
+# print([p.pull_request_number for p in TravisPy().builds(
+#     slug='DSpace/DSpace', event_type='pull_request')])
 
-print(build)
+builds = TravisPy().builds(slug='DSpace/DSpace')
+
+print([p.pull_request_number for p in builds])
+print(builds[0])
+print(t.build(builds[0]))
