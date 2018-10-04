@@ -8,7 +8,6 @@ def is_travis_project(slug):
     try:
         repo = g.get_repo(slug)
         content = repo.get_contents(".travis.yml")
-        # print(content.url)
         return True
     except Exception as e:
         return False

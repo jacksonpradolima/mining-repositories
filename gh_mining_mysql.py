@@ -1,6 +1,7 @@
 import pymysql.cursors
 import utils.GitHubUtils as GitHubUtils
 import utils.JsonUtils as JsonUtils
+import utils.TravisUtils as TravisUtils
 
 from itertools import groupby
 from operator import itemgetter
@@ -21,9 +22,9 @@ try:
 
         # Filter the repositories that contains Travis CI
         repos_travis = [
-            x['ProjectName'] for x in dataset if GitHubUtils.is_travis_project(x["ProjectName"].replace("_", "/"))]
-
-        # repos_travis = [x['ProjectName'] for x in dataset]
+            x['ProjectName'] for x in dataset
+            if GitHubUtils.is_travis_project(x["ProjectName"].replace("_", "/")) and TravisUtils.is_active(x["ProjectName"].replace("_", "/"))
+        ]
 
         # Filter the database with repositories that contanis Travis CI
         sql = """SELECT `Repository` AS repository,

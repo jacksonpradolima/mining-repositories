@@ -47,6 +47,6 @@ def unpack(obj):
         return obj
 
 
-def save_data(filename, dataset):
-    with open(filename, 'w') as f:
+def save_data(filename, dataset, option='w'):
+    with open(filename, option) as f:
         json.dump(unpack(dataset), f, indent=4)

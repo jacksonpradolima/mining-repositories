@@ -1497,19 +1497,6 @@
         ]
     },
     {
-        "id": 1120722,
-        "repository": "https://github.com/osmandapp/Osmand.git",
-        "sha1": "c45b9e6615181b7d8f4d7b5b1cc141169081c02c",
-        "author": "Victor Shcherb",
-        "time": "6/20/15 5:09 PM",
-        "refactorings": [
-            {
-                "type": "Extract Method",
-                "description": "<b>Extract Method</b> <code>private addPreviousToActionPoints(lastProjection Location, routeNodes List&lt;Location&gt;, DISTANCE_ACTION double, prevFinishPoint int, routePoint int, loc Location) : void</code> extracted from <code>private calculateActionPoints(topLatitude double, leftLongitude double, bottomLatitude double, rightLongitude double, lastProjection Location, routeNodes List&lt;Location&gt;, cd int, it Iterator&lt;RouteDirectionInfo&gt;, zoom int) : void</code> in class <code>net.osmand.plus.views.RouteLayer</code>"
-            }
-        ]
-    },
-    {
         "id": 1121732,
         "repository": "https://github.com/apache/drill.git",
         "sha1": "ffae1691c0cd526ed1095fbabbc0855d016790d7",
@@ -3620,23 +3607,6 @@
             {
                 "type": "Extract Method",
                 "description": "<b>Extract Method</b> <code>protected printJoinType(joinType JoinType) : void</code> extracted from <code>public visit(x SQLJoinTableSource) : boolean</code> in class <code>com.alibaba.druid.sql.visitor.SQLASTOutputVisitor</code>"
-            }
-        ]
-    },
-    {
-        "id": 1151782,
-        "repository": "https://github.com/osmandapp/Osmand.git",
-        "sha1": "e95aa8ab32a0334b9c941799060fd601297d05e4",
-        "author": "GaidamakUA",
-        "time": "7/28/15 1:13 PM",
-        "refactorings": [
-            {
-                "type": "Extract Method",
-                "description": "<b>Extract Method</b> <code>public showItemPopupOptionsMenu(point FavouritePoint, activity Activity, view View) : void</code> extracted from <code>public onListItemClick(l ListView, v View, position int, id long) : void</code> in class <code>net.osmand.plus.activities.FavoritesListFragment</code>"
-            },
-            {
-                "type": "Extract Method",
-                "description": "<b>Extract Method</b> <code>public showItemPopupOptionsMenu(point FavouritePoint, view View) : void</code> extracted from <code>public onChildClick(parent ExpandableListView, v View, groupPosition int, childPosition int, id long) : boolean</code> in class <code>net.osmand.plus.activities.FavoritesTreeFragment</code>"
             }
         ]
     },
