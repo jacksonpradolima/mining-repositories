@@ -108,4 +108,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 .dmypy.json
-dmypy.json
+
+# File size
+./raw_data/travistorrent_8_2_2017.csv
