@@ -18,6 +18,6 @@ print("Is it active?", repo.active)
 
 builds = TravisPy().builds(slug='DSpace/DSpace')
 
-print([p.pull_request_number for p in builds])
-print(builds[0])
-print(t.build(builds[0]))
+#print([p.pull_request_number for p in builds])
+# print(builds[0])
+print(t.build(6012))

@@ -5,7 +5,7 @@ from itertools import groupby
 from operator import itemgetter
 
 # Get the dataset in json format
-dataset = JsonUtils.get_data("data/data_refactorings.json")
+dataset = JsonUtils.get_data("../data/data_refactorings.json")
 
 repos = set([x.repository for x in dataset])
 
