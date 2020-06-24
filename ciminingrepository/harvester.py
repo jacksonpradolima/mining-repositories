@@ -16,8 +16,6 @@ from pydriller.domain.commit import ModificationType
 from ciminingrepository.utils.github_utils import auth_gh
 from ciminingrepository.utils.metrics_utils import process_file_metrics
 
-pd.set_option('display.max_columns', None)
-
 
 class Harvester(object):
     def __init__(self, slug, commits: List[str], local_repo=None):

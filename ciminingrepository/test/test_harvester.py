@@ -27,7 +27,7 @@ class RunningHarvester(unittest.TestCase):
         commits = df["commit"].unique().tolist()
 
         commits = commits[:10]
-        #commits = ['f27d3595e6adf8353fa355c75e92f526ca442303',
+        # commits = ['f27d3595e6adf8353fa355c75e92f526ca442303',
         #           '556f8a76d4ca2c8edda75a29974d3413686d09cc']
 
         test_cases = df["tc_name"].unique().tolist()
@@ -47,10 +47,18 @@ class RunningHarvester(unittest.TestCase):
 
         df.drop('tc_name_lower', axis=1, inplace=True)
 
+        df['tc_age'] = 1
+
+        for tccount, name in enumerate(df.tc_name.unique(), start=1):
+            verdicts = df.loc[df['tc_name'] == name, 'tc_age'].tolist()
+
+            df.loc[df['tc_name'] == name, 'tc_age'] = [1] + [sum(verdicts[i::-1])+1 for i in
+                                                                range(0, len(verdicts) - 1)]
+
         df.sloc.fillna(0, inplace=True)
         df.mccabe.fillna(0, inplace=True)
         df.change_type.fillna(6, inplace=True)
 
         df.to_csv(f"druid_features.csv", sep=';',
-                      header=True, index=False,
-                      quoting=csv.QUOTE_NONE)
+                  header=True, index=False,
+                  quoting=csv.QUOTE_NONE)
