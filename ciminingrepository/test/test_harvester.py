@@ -26,7 +26,7 @@ class RunningHarvester(unittest.TestCase):
 
         commits = df["commit"].unique().tolist()
 
-        commits = commits[:2]
+        commits = commits[:10]
         #commits = ['f27d3595e6adf8353fa355c75e92f526ca442303',
         #           '556f8a76d4ca2c8edda75a29974d3413686d09cc']
 
@@ -54,21 +54,3 @@ class RunningHarvester(unittest.TestCase):
         df.to_csv(f"druid_features.csv", sep=';',
                       header=True, index=False,
                       quoting=csv.QUOTE_NONE)
-
-        # print(r)
-
-        """
-        try:
-            #h.run_metrics(test_cases)
-            result = h.get_features(test_cases)
-            print(result)
-            columns_id = ['commit', 'tc_name']
-            #'path_to_file', 'test_case', 'sloc', 'mccabe', 'change_type'
-            #df_new = pd.merge(df, result, on=columns_id, how='left')
-
-
-            #h.display_info()
-            #h.display_test_case_status(test_cases)
-        finally:
-            h._delete_temp_folder()
-        """
