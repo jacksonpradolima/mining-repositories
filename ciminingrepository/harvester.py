@@ -178,6 +178,9 @@ class Harvester(object):
         return df[['path_to_file', 'tc_name', 'sloc', 'mccabe']]
 
     def get_features(self, test_cases):
+        # Clean invalid test cases
+        test_cases = [x for x in test_cases if str(x) != 'nan']
+
         df = pd.DataFrame(columns=['commit', 'path_to_file', 'tc_name', 'sloc', 'mccabe', 'change_type'])
 
         try:
