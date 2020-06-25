@@ -13,7 +13,6 @@ from pathlib2 import Path
 from pydriller import RepositoryMining
 from pydriller.domain.commit import ModificationType
 
-from ciminingrepository.utils.github_utils import auth_gh
 from ciminingrepository.utils.metrics_utils import process_file_metrics
 
 
@@ -21,9 +20,6 @@ class Harvester(object):
     def __init__(self, slug, commits: List[str], local_repo=None):
         self.slug = slug
         self.url_repository = f"https://github.com/{self.slug}.git"
-
-        self.gh = auth_gh()
-        self.repository = self.gh.get_repo(self.slug)
 
         self.commits_sha = commits
 
@@ -65,7 +61,6 @@ class Harvester(object):
 
     def update_harvester_repo(self, slug, commits):
         self.slug = slug
-        self.repository = self.gh.get_repo(self.slug)
         self.url_repository = f"https://github.com/{self.slug}.git"
         self.commits_sha = commits
 
