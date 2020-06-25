@@ -6,6 +6,7 @@ import pandas as pd
 from pathlib2 import Path
 
 from ciminingrepository.harvester import Harvester
+from ciminingrepository.utils.metrics_utils import apply_user_preference
 
 DEFAULT_EXPERIMENT_DIR = 'results/features/'
 
@@ -55,6 +56,8 @@ if __name__ == '__main__':
         df.sloc.fillna(0, inplace=True)
         df.mccabe.fillna(0, inplace=True)
         df.change_type.fillna(6, inplace=True)
+
+        apply_user_preference(df)
 
         df.to_csv(f"{args.output_dir}{system}_features.csv", sep=';',
                   header=True, index=False,
