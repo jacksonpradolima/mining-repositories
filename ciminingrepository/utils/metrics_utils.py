@@ -49,18 +49,19 @@ def process_file_metrics(root_dir, in_file_names, file_processors):
 
     return file_metrics
 
+
 def apply_user_preference(df, percs=[0.1, 0.5, 0.8]):
     # Create the columns
-    df['user_pref_80'] = 0
-    df['user_pref_50'] = 0
-    df['user_pref_10'] = 0
+    df['UserPref_80'] = 0
+    df['UserPref_50'] = 0
+    df['UserPref_10'] = 0
 
-    commits = df["commit"].unique().tolist()
+    commits = df["BuildId"].unique().tolist()
 
     # For each commit
     for commit in commits:
         # Get the failing test cases in current commit
-        tc_fails = np.array(df.loc[df['commit'] == commit, 'tc_failed'].tolist())
+        tc_fails = np.array(df.loc[df['BuildId'] == commit, 'NumErrors'].tolist())
 
         # If there is a test case that fails
         if sum(tc_fails) > 0:
@@ -85,4 +86,4 @@ def apply_user_preference(df, percs=[0.1, 0.5, 0.8]):
                 tc_fails = tc_fails.astype(int)
 
                 # Update the data
-                df.loc[df['commit'] == commit, f'user_pref_{int(perc * 100)}'] = tc_fails
+                df.loc[df['BuildId'] == commit, f'UserPref_{int(perc * 100)}'] = tc_fails

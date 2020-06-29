@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from dateutil import parser
-from coleman.utils import split_dataframe_rows
+from ciminingrepository.utils.pandas_utils import split_dataframe_rows
 
 if not os.path.exists("logs"):
     os.makedirs("logs")
@@ -88,7 +88,7 @@ def pre_processing(repository, force=False):
 
         # Merge with Travis CI Information
         df_new = pd.merge(df_new, df_repo, on=[
-                          'build_id', 'commit'], how='left')
+            'build_id', 'commit'], how='left')
 
         # Get the errors
         df_error = df_error.sort_values('tc_failed', ascending=False).drop_duplicates(
@@ -232,6 +232,75 @@ def feature_engineering(repository, force=False):
         logging.error(f'Failed to feature engineering in line {exc_tb.tb_lineno}: {str(e)}')
 
 
+def feature_engineering_contextual(df):
+    """
+    This function get the Filtered Data and parse it to a file (features engineered CSV)
+    that it will be used in the analysis
+    :param repository: The repository that will be analyzed
+    """
+    # Select the main columns
+    df = df[['build_id', 'tc_id', 'travis_started_at',
+             'tc_duration', 'tc_run', 'tc_failed',
+             'sloc', 'mccabe', 'change_type']]
+
+    # workaround to avoid possible errors
+    # fix datetime (when we have +00:00 with the date)
+    df['travis_started_at'] = df['travis_started_at'].apply(
+        lambda date: datetime.datetime.strptime(date.split('+')[0] if '+' in date else date, '%Y-%m-%d %H:%M:%S'))
+    df.travis_started_at = pd.to_datetime(df.travis_started_at)
+    df.tc_run = pd.to_numeric(df.tc_run, errors='coerce')
+    df.tc_failed = pd.to_numeric(df.tc_failed, errors='coerce')
+    df.tc_duration = pd.to_numeric(df.tc_duration, errors='coerce')
+    df.sloc = pd.to_numeric(df.sloc, errors='coerce')
+    df.mccabe = pd.to_numeric(df.mccabe, errors='coerce')
+    df.change_type = pd.to_numeric(df.change_type, errors='coerce')
+
+    df = df[df.tc_run.notnull() & df.tc_failed.notnull()
+            & df.tc_duration.notnull()]
+
+    reddf = df.groupby(['build_id', 'tc_id'], as_index=False).agg(
+        {'travis_started_at': np.min, 'tc_run': np.sum, 'tc_failed': np.sum, 'tc_duration': np.sum,
+         'sloc': np.max, 'mccabe': np.max, 'change_type': np.max})
+
+    tc_fieldnames = ['Id', 'Name', 'BuildId', 'Duration', 'CalcPrio', 'LastRun',
+                     'NumRan', 'NumErrors', 'SLOC', 'McCabe', 'ChangeType',
+                     'Verdict']
+
+    tcdf = pd.DataFrame(columns=tc_fieldnames, index=reddf.index)
+
+    # Id | Unique numeric identifier of the test execution
+    tcdf['Id'] = reddf.index + 1
+    # Name | Unique numeric identifier of the test case
+    tcdf['Name'] = reddf['tc_id']
+    # BuildId | Value uniquely identifying the build.
+    tcdf['BuildId'] = reddf['build_id']
+    # Duration | Approximated runtime of the test case
+    tcdf['Duration'] = reddf['tc_duration']
+    # CalcPrio | Priority of the test case, calculated by the prioritization algorithm(output column, initially 0)
+    tcdf['CalcPrio'] = 0
+    # LastRun | Previous last execution of the test case as date - time - string(Format: `YYYY - MM - DD HH: ii`)
+    tcdf['LastRun'] = reddf['travis_started_at']
+    # NumRan | Number of test ran
+    tcdf['NumRan'] = reddf['tc_run']
+    # Errors | Number of errors revealed
+    tcdf['NumErrors'] = reddf['tc_failed']
+
+    # SLOC | Source Lines of Code
+    tcdf['SLOC'] = reddf['sloc']
+    # McCabe | McCabe Complexity
+    tcdf['McCabe'] = reddf['mccabe']
+    # ChangeType | Obtained from PyDriller and it means the kind of change applied: ADD, DEL, UPDATE, and so on
+    tcdf['ChangeType'] = reddf['change_type']
+
+    # Verdict | Test verdict of this test execution(Failed: 1, Passed: 0)
+    tcdf['Verdict'] = reddf['tc_failed'].apply(lambda x: 1 if x > 0 else 0)
+
+    # Let's order and process the data remain
+    tcdf.sort_values(by='LastRun', inplace=True)
+
+    return tcdf
+
+
 def add_last_results(repository, force=False):
     try:
         logging.debug(f"Start the feature engineering procedure in '{repository} to add last results'")
@@ -309,6 +378,7 @@ def parse_industrial_dataset(repository, force=False):
         logging.debug(f"Finish the feature engineering procedure in '{repository}', an industrial dataset")
 
     except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
         logging.error(f'Failed to feature engineering (industrial dataset) in line {exc_tb.tb_lineno}: {str(e)}')
 
 

@@ -2,39 +2,37 @@ import csv
 import os
 import unittest
 
-import numpy as np
 import pandas as pd
 
 from ciminingrepository.harvester import Harvester
 from ciminingrepository.utils.metrics_utils import apply_user_preference
+from ciminingrepository.data_filtering import feature_engineering_contextual
 
 class RunningHarvester(unittest.TestCase):
     def setUp(self):
-        self.dataset_dir = "../../data"
-        self.slug = "alibaba@druid"
-        self.df = pd.read_csv(f"{self.dataset_dir}{os.sep}{self.slug}{os.sep}data-filtered.csv", sep=";")
+        # self.dataset = "alibaba@druid"
+        # self.dataset = "DSpace@DSpace"
+        # self.dataset = "square@okhttp"
+        # self.dataset = "square@retrofit"
+        self.dataset = "zxing@zxing"
+        self.clone_dir = "D:\github-datasets"
+        self.output_dir = "../../results/test"
+        self.dataset_dir = "D:\mab-datasets"
+        self.df = pd.read_csv(f"{self.dataset_dir}{os.sep}{self.dataset}{os.sep}data-filtered.csv", sep=";")
 
-    @unittest.skip
     def test_commits(self):
-        # ['build_id', 'build', 'commit', 'travis_started_at', 'log_status',
-        # 'tc_id', 'tc_name', 'tc_duration', 'tc_run', 'tc_failed'],
-
-        # print(df.columns)
-        # df = df[['commit', 'tc_name', 'tc_duration', 'tc_run', 'tc_failed']]
-
-        # Filter to test
-        # df = df[df.commit.isin(commits)]
+        slug = self.dataset.replace("@", "/")
+        system = slug.split("/")[-1]
 
         commits = self.df["commit"].unique().tolist()
-
-        commits = commits[:10]
-        # commits = ['f27d3595e6adf8353fa355c75e92f526ca442303',
-        #           '556f8a76d4ca2c8edda75a29974d3413686d09cc']
-
         test_cases = self.df["tc_name"].unique().tolist()
 
+        commits = commits[:2]
+
+        self.df = self.df[self.df.commit.isin(commits)]
+
         # Prepare the mining (and cloning the repo)
-        h = Harvester(self.slug.replace("@", "/"), commits, "D:\druid")
+        h = Harvester(slug, commits, os.path.join(self.clone_dir, system))
 
         r = h.get_features(test_cases)
 
@@ -44,27 +42,22 @@ class RunningHarvester(unittest.TestCase):
 
         r = r[['commit', 'tc_name_lower', 'sloc', 'mccabe', 'change_type']]
 
-        self.df = pd.merge(self.df, r, on=['commit', 'tc_name_lower'], how='left')
+        self.df = self.df.merge(r, on=['commit', 'tc_name_lower'], how='left')
 
         self.df.drop('tc_name_lower', axis=1, inplace=True)
-
-        self.df['tc_age'] = 1
-
-        for tccount, name in enumerate(self.df.tc_name.unique(), start=1):
-            verdicts = self.df.loc[self.df['tc_name'] == name, 'tc_age'].tolist()
-
-            self.df.loc[self.df['tc_name'] == name, 'tc_age'] = [1] + [sum(verdicts[i::-1]) + 1 for i in
-                                                                       range(0, len(verdicts) - 1)]
 
         self.df.sloc.fillna(0, inplace=True)
         self.df.mccabe.fillna(0, inplace=True)
         self.df.change_type.fillna(6, inplace=True)
 
-        self.df.to_csv(f"druid_features.csv", sep=';',
+        self.df = feature_engineering_contextual(self.df)
+        apply_user_preference(self.df)
+
+        self.df.to_csv(f"{self.output_dir}{os.sep}{system}_features.csv", sep=';',
                        header=True, index=False,
                        quoting=csv.QUOTE_NONE)
 
-
+    @unittest.skip
     def test_user_preferece(self):
         df = self.df.copy()
 

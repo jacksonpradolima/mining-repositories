@@ -74,7 +74,9 @@ class Harvester(object):
         return self.repository_mining
 
     def _get_class_file_from_java_path(self, path):
-        return path.replace("\\", '.').replace("/", '.').replace('.java', '').replace('src.test.', '')
+        path = path.replace("\\", '.').replace("/", '.').replace('.java', '')
+        # to avoid multiple projects
+        return path.split('src.test.')[-1]
 
     def _get_modifications(self, commit, test_cases):
         records = []
