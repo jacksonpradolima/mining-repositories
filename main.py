@@ -32,6 +32,7 @@ if __name__ == '__main__':
     for dataset in args.datasets:
         slug = dataset.replace("@", "/")
         system = slug.split("/")[-1]
+        print("Running for", dataset)
 
         df = pd.read_csv(f"{args.project_dir}{os.sep}{dataset}{os.sep}data-filtered.csv", sep=";")
 
