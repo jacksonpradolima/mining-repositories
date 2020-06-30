@@ -80,7 +80,8 @@ def pre_processing(repository, force=False):
         logging.debug("All tests with errors were splitted")
 
         # The key columns from data
-        # We can have a build with many jobs, so we want in the future the tc that failed max in any job of my build
+        # We can have a build with many jobs, so we want in the future the tc
+        # that failed max in any job of my build
         columns_id = ['build_id', 'commit', 'job_id', 'tc_name']
 
         # Remove the duplicates considering the key columns
@@ -107,7 +108,8 @@ def pre_processing(repository, force=False):
                               'log_status', 'bool_tests_ran']],
                           on=columns_id, how='left')
 
-        # Extract the following columns that have the largest value in case of duplicate
+        # Extract the following columns that have the largest value in case of
+        # duplicate
         df_temp = df[["build_id", "commit", 'job_id', 'tc_name', 'tc_run']] \
             .sort_values('tc_run', ascending=False).drop_duplicates(subset=columns_id).sort_index()
         df_new = pd.merge(df_new, df_temp, on=columns_id, how='left')
@@ -193,9 +195,11 @@ def feature_engineering(repository, force=False):
         tcdf['BuildId'] = reddf['build_id']
         # Duration | Approximated runtime of the test case
         tcdf['Duration'] = reddf['tc_duration']
-        # CalcPrio | Priority of the test case, calculated by the prioritization algorithm(output column, initially 0)
+        # CalcPrio | Priority of the test case, calculated by the
+        # prioritization algorithm(output column, initially 0)
         tcdf['CalcPrio'] = 0
-        # LastRun | Previous last execution of the test case as date - time - string(Format: `YYYY - MM - DD HH: ii`)
+        # LastRun | Previous last execution of the test case as date - time -
+        # string(Format: `YYYY - MM - DD HH: ii`)
         tcdf['LastRun'] = reddf['travis_started_at']
         # NumRan | Number of test ran
         tcdf['NumRan'] = reddf['tc_run']
@@ -245,8 +249,15 @@ def feature_engineering_contextual(df):
 
     # workaround to avoid possible errors
     # fix datetime (when we have +00:00 with the date)
+    # df['travis_started_at'] = df['travis_started_at'].apply(
+    # lambda date: datetime.datetime.strptime(date.split('+')[0] if '+' in
+    # date else date, '%Y-%m-%d %H:%M:%S'))
+
     df['travis_started_at'] = df['travis_started_at'].apply(
-        lambda date: datetime.datetime.strptime(date.split('+')[0] if '+' in date else date, '%Y-%m-%d %H:%M:%S'))
+        lambda date: date.split('+')[0] if '+' in date else date)
+    df['travis_started_at'] = pd.to_datetime(
+        df['travis_started_at'], infer_datetime_format=True)
+
     df.travis_started_at = pd.to_datetime(df.travis_started_at)
     df.tc_run = pd.to_numeric(df.tc_run, errors='coerce')
     df.tc_failed = pd.to_numeric(df.tc_failed, errors='coerce')
@@ -276,9 +287,11 @@ def feature_engineering_contextual(df):
     tcdf['BuildId'] = reddf['build_id']
     # Duration | Approximated runtime of the test case
     tcdf['Duration'] = reddf['tc_duration']
-    # CalcPrio | Priority of the test case, calculated by the prioritization algorithm(output column, initially 0)
+    # CalcPrio | Priority of the test case, calculated by the prioritization
+    # algorithm(output column, initially 0)
     tcdf['CalcPrio'] = 0
-    # LastRun | Previous last execution of the test case as date - time - string(Format: `YYYY - MM - DD HH: ii`)
+    # LastRun | Previous last execution of the test case as date - time -
+    # string(Format: `YYYY - MM - DD HH: ii`)
     tcdf['LastRun'] = reddf['travis_started_at']
     # NumRan | Number of test ran
     tcdf['NumRan'] = reddf['tc_run']
@@ -289,7 +302,8 @@ def feature_engineering_contextual(df):
     tcdf['SLOC'] = reddf['sloc']
     # McCabe | McCabe Complexity
     tcdf['McCabe'] = reddf['mccabe']
-    # ChangeType | Obtained from PyDriller and it means the kind of change applied: ADD, DEL, UPDATE, and so on
+    # ChangeType | Obtained from PyDriller and it means the kind of change
+    # applied: ADD, DEL, UPDATE, and so on
     tcdf['ChangeType'] = reddf['change_type']
 
     # Verdict | Test verdict of this test execution(Failed: 1, Passed: 0)
@@ -361,7 +375,8 @@ def parse_industrial_dataset(repository, force=False):
         df['BuildId'] = df['LastRun'].apply(
             lambda x: np.where(cycles == x)[0][0] + 1)
 
-        # Drop duplicates and preserve rows that have the largest value in case of duplicate
+        # Drop duplicates and preserve rows that have the largest value in case
+        # of duplicate
         df = df.sort_values('Duration', ascending=False).drop_duplicates(subset=['Name', 'BuildId'],
                                                                          keep="last")
         # Order correctly
