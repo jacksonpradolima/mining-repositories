@@ -6,7 +6,7 @@ import pandas as pd
 from pathlib2 import Path
 
 from ciminingrepository.harvester import Harvester
-from ciminingrepository.utils.metrics_utils import apply_user_preference
+from ciminingrepository.utils.metrics_utils import apply_user_preference, apply_test_case_age
 from ciminingrepository.data_filtering import feature_engineering_contextual
 
 DEFAULT_EXPERIMENT_DIR = 'results/features/'
@@ -60,6 +60,7 @@ if __name__ == '__main__':
         df.change_type.fillna(6, inplace=True)
 
         df = feature_engineering_contextual(df)
+        apply_test_case_age(df)
         apply_user_preference(df)
 
         df.to_csv(f"{args.output_dir}{system}_features.csv", sep=';',

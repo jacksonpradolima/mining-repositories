@@ -5,16 +5,18 @@ import unittest
 import pandas as pd
 
 from ciminingrepository.harvester import Harvester
-from ciminingrepository.utils.metrics_utils import apply_user_preference
+from ciminingrepository.utils.metrics_utils import apply_user_preference, apply_test_case_age
 from ciminingrepository.data_filtering import feature_engineering_contextual
 
 class RunningHarvester(unittest.TestCase):
     def setUp(self):
-        # self.dataset = "alibaba@druid"
+        self.dataset = "alibaba@druid"
         # self.dataset = "DSpace@DSpace"
         # self.dataset = "square@okhttp"
         # self.dataset = "square@retrofit"
-        self.dataset = "zxing@zxing"
+        # self.dataset = "zxing@zxing"
+        # self.dataset = "google@guava"
+        # self.dataset = "deeplearning4j@deeplearning4j"
         self.clone_dir = "D:\github-datasets"
         self.output_dir = "../../results/test"
         self.dataset_dir = "D:\mab-datasets"
@@ -27,7 +29,7 @@ class RunningHarvester(unittest.TestCase):
         commits = self.df["commit"].unique().tolist()
         test_cases = self.df["tc_name"].unique().tolist()
 
-        commits = commits[:2]
+        #commits = commits[:2]
 
         self.df = self.df[self.df.commit.isin(commits)]
 
@@ -51,6 +53,7 @@ class RunningHarvester(unittest.TestCase):
         self.df.change_type.fillna(6, inplace=True)
 
         self.df = feature_engineering_contextual(self.df)
+        apply_test_case_age(self.df)
         apply_user_preference(self.df)
 
         self.df.to_csv(f"{self.output_dir}{os.sep}{system}_features.csv", sep=';',

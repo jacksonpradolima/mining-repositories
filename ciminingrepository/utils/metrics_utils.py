@@ -87,3 +87,12 @@ def apply_user_preference(df, percs=[0.1, 0.5, 0.8]):
 
                 # Update the data
                 df.loc[df['BuildId'] == commit, f'UserPref_{int(perc * 100)}'] = tc_fails
+
+
+def apply_test_case_age(df):
+    df['TcAge'] = 1
+
+    for tccount, name in enumerate(df.Name.unique(), start=1):
+        age = df.loc[df['Name'] == name, 'TcAge'].tolist()
+
+        df.loc[df['Name'] == name, 'TcAge'] = [1] + [sum(age[i::-1]) + 1 for i in range(0, len(age) - 1)]
