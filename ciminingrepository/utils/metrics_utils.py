@@ -1,6 +1,7 @@
 import multiprocessing as mp
 import os
 import sys
+from itertools import accumulate
 
 import numpy as np
 from metrics.compute import compute_file_metrics
@@ -96,3 +97,18 @@ def apply_test_case_age(df):
         age = df.loc[df['Name'] == name, 'TcAge'].tolist()
 
         df.loc[df['Name'] == name, 'TcAge'] = [1] + [sum(age[i::-1]) + 1 for i in range(0, len(age) - 1)]
+
+
+def apply_post_processing(df):
+    """
+    This function take a list of numbers and replace all zeros by the previous nonzero value
+    Example: [1, 0, 0, 2, 0] -> [1,1,1,2,2]
+    :param df:
+    :return:
+    """
+    for tccount, name in enumerate(df.Name.unique(), start=1):
+        sloc = df.loc[df['Name'] == name, 'SLOC'].tolist()
+        mccabe = df.loc[df['Name'] == name, 'McCabe'].tolist()
+
+        df.loc[df['Name'] == name, 'SLOC'] = list(accumulate(sloc, lambda x, y: y if y else x))
+        df.loc[df['Name'] == name, 'McCabe'] = list(accumulate(mccabe, lambda x, y: y if y else x))
