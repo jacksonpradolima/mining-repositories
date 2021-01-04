@@ -1,82 +1,91 @@
-# mining-repositories
+[<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/pradolima)
 
-### Preparation
-
-Clone this repository into a local directory. Under this directory, create the subdirectories `data` and `raw-data`.
+[![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
 
 
-------
+# Mining Repositories
+
+![](https://img.shields.io/badge/python-3.6+-blue.svg)
 
 
+This repository contains methods to mining feature information for each test case over commits from a git repository.
 
-This repository contains data analysis scripts used in the paper "Sentiment Analysis of Travis CI Builds" by Rodrigo Souza (UFBA) and Bruno Silva (UNIFACS), presented at the 14th International Conference on Mining Software Repositories -- May 20-21, 2017. Buenos Aires, Argentina.
+1. **Main Process**  (```main.py```) iterate over commits from a git repository to extract the features of each test case available (in the commit), such as **Test Case Name**, **Test Size**, **Cyclomatic Complexity**, and **Change Type**.
+2. **Post Processing**  (```main_post.py```) this process replace all zeros by the previous nonzero value. This is necessary for the **Test Size** and **Cyclomatic Complexity** that are not always available.
 
-## Dependencies
+# Features Available
 
-- SQLite
-- Ruby, with the following gems:
-    - git
-    - sqlite
-- R, with the following packages: 
-    - data.table
-    - dplyr
-    - effsize
-    - ggplot2
-    - knitr
-    - orddom
-    - RSQLite
-    - SnowballC
-    - stringr
-    - vcd
+The tool aims to extract the following data:
 
-## Steps
+- **Test Case Age (TcAge)**: This feature measures how long the test case exists and is given by a number which is incremented for each new CI Cycle in that the test case appears;    
+- **Test User-Preference (TUP)**: Test case importance given by the tester. In this case, this feature is based on user-preference. For this feature, we randomly selects a percentage (10%, 50%, and 80%) of failing test cases in each commit;
+- **Test Case Change (ChangeType)**: Considers whether a test case changed. If a test case is changed from a commit to another, there is a high probability that the alteration was performed because some change in the software needs to be tested. If the test case was changed, we could detect and consider if the test case was renamed, or it added or removed some methods;
+- **Cyclomatic Complexity (McCabe)**: This feature considers the complexity of McCabe. High complexity can be related to a more elaborated test case;
+- **Test Size (SLOC)**: TThe SLOC metric counts the lines but excludes empty lines and comments. This is sometimes referred to as the source lines of code (SLOC). In literature this is often also referred as physical lines of code.
 
-To reproduce the results in the paper, you'll need to get information from repository, get build information, extract sentiment, and finally run the analysis.
+Such a features are merged with features already extracted in Travis Torrent tool:
 
-### Preparation
+- **Test Case Duration (Duration)**: The time spent by a test case to execute;
+- **Number of Test Ran Methods (NumRan)**: The number of test methods executed during the test, considering that some test methods are not executed due to some previous test method(s) have been failed;
+- **Number of Test Failed Methods (NumErrors)**: The number of test methods which failed during the test. This is different from the reward given by RNFail function, which take only two values: 1 or 0. As we do not have any information about correlation failure, we assume large number of failed test methods have higher probability to detect different failures.
 
-Clone this repository into a local directory. Under this directory, create the subdirectories `data` and `raw-data`.
 
-### Get information from repository
+# :red_circle: Installing required dependencies
 
-Clone all git repositories into directories named `user__project`, replacing `user` by the repository owner and `project` by the project name. Example: The repository at <https://github.com/ReactiveX/rxjs> needs to be cloned into a directory named `ReactiveX__rxjs`
+The following command allows to install the required dependencies:
 
-Run `commit-log/gitlob.rb DBPATH REPOPATH`. This script reads all repositories under the path `REPOPATH`, extracts the commit log for each repository and writes them into the SQLite database located at the path `DBPATH` (please replace `REPOPATH` and `DBPATH` with actual paths).
+```
+ $ pip install -r requirements.txt
+ ```
 
-### Get build information
+ External packages used in this tool to extract features are:
 
-Download <https://travistorrent.testroots.org/dumps/travistorrent_8_2_2017.csv.gz> to the `raw-data/` directory (the directory needs to be created).
+ - [metrics](https://github.com/markfink/metrics)
+ - [PyDriller](https://github.com/ishepard/pydriller)
 
-Run `src/convert-travis-csv-to-sqlite.R` to convert the downloaded file into `.rds`, a file format optimized for R.
+# :heavy_exclamation_mark: Preparation
 
-### Extract sentiment
+Before running the tool, please make the `git clone` for each dataset (repository) under evaluation. Now, the tool does not clone a repository. Besides that, cloning repositories before running this tool allow avoiding overhead.
 
-Download the SentiStrength data at <http://sentistrength.wlv.ac.uk/> (you'll need to fill in a form)
+#  Using the tool <img width="40" src="https://emojis.slackmojis.com/emojis/images/1609352144/11926/dianajoa.gif?1609352144" alt="Dianajoa" />
 
-Download the SentiStrength Java tool at <http://gateway.path.berkeley.edu:8080/artifactory/list/release-local/com/sentistrength/sentistrength/0.1/sentistrength-0.1.jar>
+## 📌 Running the feature extraction process (*Main Process*)
 
-Move SentiStrength's files into the a subdirectory of this repository's directory named `sentistrength`. Move the data files to a subdirectory `sentistrength/SentStrength_Data`.
+To extract the features, do:
 
-Run `src/filter-wordlist.R` (using R) to filter software-specific words from SentiStrength's data files.
+``` console
+python main.py --project_dir PathToDatasets --clone_dir PathToCloneDatasets --datasets ListOfDatasets
+``` 
+where
 
-Go to `sentistrength` and run the following command to extract commit messages from the SQLite database to a text file:
-
-```bash
-sqlite3 PATH-TO-COMMIT-LOG.sqlite "select replace(replace(message, char(13), ' '), char(10), ' ') from commits order by project, sha;" > bli
+``` console
+    --project_dir                    Path to datasets where we can find the 'data-filtered.csv' file
+    --clone_dir                      Path to folder where the repositories were cloned
+    --datasets                       List of datasets, in which represents a folder inside 'project_dir' and 'clone_dir' directories. For instance, alibaba@druid alibaba@fastjson
+    -o, --output_dir                 Local to save the results. Default 'results/features/'
 ```
 
-Run the following command to compute the sentiment for each commit message in the text file:
+## 📌 Running the post processing (*Post Processing*)
 
-```bash
-java -jar sentistrength-0.1.jar sentidata SentStrength_Data/ input ./bli explain
+Once that the features were extract, do:
+
+``` console
+python main_post.py --feature_dir results/features/ --datasets alibaba@druid alibaba@fastjson
 ```
 
-Rename the output to `bli2_out.txt` and use `gzip` to compress it to `bli2_out.txt.gz`.
+where
 
-### Run the analysis
+``` console
+    --feature_dir                    Path to results where the features were saved    
+    --datasets                       List of datasets, in which represents a folder inside 'feature_dir' directory. For instance, alibaba@druid alibaba@fastjson
+    -o, --output_dir                 Local to save the results after post processing. Default 'results/features_post/'
+```
 
-Using R, run the following scripts under the `src` directory:
+## Possible Problems that you can find:
 
-1. `convert-sentistrength.R` - to convert SentiStrength's output to an SQLite database
-2. `merge-travis-senti.R` - to merge all the data into a single R data frame
-3. `analyze.R` - compute statistics, plot graphs, and test hypotheses
+1. Some commits are unnavailble. This occurs because git cannot "pull" (obtain) the source code from a commit. This is a problem from git.
+2. Due to problem #1, we recommend to execute the **Post Processing** to fill the gaps in the features.  
+
+# Contributors
+
+- 👨‍💻 Jackson Antonio do Prado Lima <a href="mailto:jacksonpradolima@gmail.com">:e-mail:</a>
